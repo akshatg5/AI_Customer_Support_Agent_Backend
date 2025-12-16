@@ -7,6 +7,7 @@ dotenv.config();
 import authRoutes from "./routes/authRoutes";
 import chatRoutes from "./routes/chatRoutes"
 import { connectDB } from "./config/database";
+import { apiLimiter } from "./middleware/rateLimiter";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,6 +24,9 @@ app.get("/health", (req, res) => {
   console.log("Health check route hit");
   res.json({ status: "OK", message: "Server is running" });
 });
+
+// general rate limiting to all API routes
+app.use('/api/', apiLimiter);
 
 // Routes
 app.use("/api/auth", authRoutes);

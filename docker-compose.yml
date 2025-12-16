@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  # Backend service
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: ai-support-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+    restart: unless-stopped
