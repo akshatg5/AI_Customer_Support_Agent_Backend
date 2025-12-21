@@ -2,7 +2,8 @@ import { Request, Response } from "express";
 
 import { generateToken } from "../utils/jwt";
 import { signupSchema, loginSchema } from "../utils/validation";
-import { User } from "../models/user";
+import { IUser, User } from "../models/user";
+import { AuthRequest } from "../types/express";
 
 export const signup = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -90,5 +91,46 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
     console.error("Login error:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const whoami = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        authenticated: false,
+        error: "User invalid",
+      });
+      return;
+    }
+
+    // fetch user data from database
+    const user: IUser = await User.findById(req.user.userId).select(
+      "-password"
+    );
+
+    if (!user) {
+      res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      authenticated: true,
+      user: {
+        id: user?._id,
+        email: user?.email,
+        name: user?.name,
+      },
+    });
+  } catch (error: any) {
+    console.error("Whoami error:", error);
+    res.status(500).json({
+      authenticated: false,
+      error: "Internal server error",
+    });
   }
 };
